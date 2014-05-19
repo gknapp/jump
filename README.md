@@ -2,13 +2,13 @@
 
 A platform game.
 
-# build
+### build
 
-lein do cljsbuild clean, cljsbuild auto
+`lein do cljsbuild clean, cljsbuild auto`
 
-# execute
+### execute
 
-cd resources/public
-python -m SimpleHTTPServer 3000
+`cd resources/public`
+`python -m SimpleHTTPServer 3000`
 
 http://localhost:3000
