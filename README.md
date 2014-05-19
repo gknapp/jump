@@ -8,7 +8,9 @@ A platform game.
 
 ### execute
 
-`cd resources/public`
-`python -m SimpleHTTPServer 3000`
+```bash
+cd resources/public
+python -m SimpleHTTPServer 3000
+```
 
 http://localhost:3000
