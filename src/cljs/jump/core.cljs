@@ -15,14 +15,12 @@
   [player screen]
   (let [ctx (:context screen)
         sprite (:image player)
+        t (:top player)
+        l (:left player)
         w (:width player)
-        h (:height player)
-        o-top 94
-        o-left 167
-        o-height (+ o-top h)
-        o-width (+ o-left w)]
-    (println o-top o-left w h)
-    (.drawImage ctx sprite 10 10)))
+        h (:height player)]
+    (println ctx sprite l t w h 10 10 w h)
+    (.drawImage ctx sprite l t w h 10 10 w h)))
 
 (defn image
   [src]
@@ -32,6 +30,8 @@
 
 (def player
   {:image (image "sprites/player.png")
+   :top 94
+   :left 167
    :height 35
    :width 37
    :facing :right
@@ -41,4 +41,6 @@
 (set! (.-onload js/window)
       (do
         (println "Window loaded")
+        (println "player" player)
+        (println "screen" (screen))
         (draw-sprite player (screen))))
