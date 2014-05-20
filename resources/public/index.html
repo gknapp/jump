@@ -1,16 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
   <title>JUMP!</title>
   <style type="text/css">
-  body {
-    background-color: black;
+  canvas {
+    background-color: #777;
   }
   </style>
 </head>
 <body>
-  <canvas width="600" height="450" id="screen"></canvas>
+  <canvas width="800" height="600" id="screen"></canvas>
   <script src="js/jump/main.js"></script>
+<!--
+  <script>
+        console.log("Drawing sprite to canvas");
+        var c = document.getElementById("screen").getContext("2d");
+        var sprite = new Image();
+        sprite.src = "sprites/player.png";
+
+        sprite.onload = function () {
+            c.drawImage(sprite, 116, 94, 37, 35, 10, 10, 37, 35);
+        };
+  </script>
+-->
 </body>
 </html>
