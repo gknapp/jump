@@ -16,11 +16,12 @@
               (component/solid)
               (component/renderable 37 35)]}]})
 
-(defn update []
+(defn update! [game]
   game)
 
 (defn animate []
-  (-> update
+  (-> game
+      update!
       render)
   (request-frame animate))
 

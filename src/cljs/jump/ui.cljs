@@ -1,4 +1,5 @@
-(ns jump.ui)
+(ns jump.ui
+  (:require [jump.entity :as ent]))
 
 (def request-frame (or (.-requestAnimationFrame js/window)
                        (.-webkitRequestAnimationFrame js/window)
@@ -14,26 +15,26 @@
     (set! (.-src img) src)
     img))
 
-(defn draw
-  [entity screen]
-  #_(.fillRect screen x y w h)
-  (println entity)
-  (println screen))
-
 (defonce canvas (.getElementById js/document "screen"))
 (defonce screen {:context (.getContext canvas "2d")
                  :height (.-height canvas)
                  :width  (.-width canvas)})
 
+(defn draw
+  [entity screen]
+  (let [ctx (:context screen)
+        {:keys [x y]} (ent/select-trait :position entity)
+        {:keys [width height]} (ent/select-trait :renderable entity)]
+    (.fillRect ctx x y width height)))
+
 (defn renderable?
-  ; {:id :player :traits [... {:type :renderable} ...]}
-  [{:keys [traits]}]
-  (some #(= (:type %) :renderable) traits))
+  [entity]
+  (map? (ent/select-trait :renderable entity)))
 
 (defn render
   [game]
-  (let [;_ (println (:entities game))
-        entities (->> game
-                      :entities
+  (let [entities (->> (game :entities)
                       (filter renderable?))]
-    (map #(draw % (:context screen)) entities)))
+    (when entities
+      (doseq [entity entities]
+        (draw entity screen)))))
