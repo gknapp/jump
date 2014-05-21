@@ -9,7 +9,7 @@
 ;; map sprites to game entities
 ;; :sprite {:image (image "sprites/player.png") :top 94 :left 116 :height 35 :width 37}}})
 
-(defn image
+#_(defn image
   [src]
   (let [img (new js/Image)]
     (set! (.-src img) src)
@@ -23,18 +23,14 @@
 (defn draw
   [entity screen]
   (let [ctx (:context screen)
-        {:keys [x y]} (ent/select-trait :position entity)
-        {:keys [width height]} (ent/select-trait :renderable entity)]
+        {:keys [x y]} (ent/get-trait :position entity)
+        {:keys [width height]} (ent/get-trait :renderable entity)]
     (.fillRect ctx x y width height)))
 
-(defn renderable?
-  [entity]
-  (map? (ent/select-trait :renderable entity)))
-
 (defn render
-  [game]
-  (let [entities (->> (game :entities)
-                      (filter renderable?))]
+  [entities]
+  (let [renderable? #(map? (ent/get-trait :renderable %))
+        entities (filter renderable? entities)]
     (when entities
       (doseq [entity entities]
         (draw entity screen)))))

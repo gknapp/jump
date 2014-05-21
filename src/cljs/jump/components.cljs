@@ -1,16 +1,22 @@
 (ns jump.components)
 
+; could be a macro
 (defn component [name & args]
-  (merge {:type (keyword name)} args))
+  {name (first args)})
 
 (defn position [x y]
   (component :position
              {:x x
               :y y}))
 
-(defn control [input]
-  (component :control
-             {:input input}))
+(defn input []
+  (component :input {}))
+
+(defn player []
+  (component :player {:blocked false}))
+
+(defn ai []
+  (component :ai {}))
 
 (defn renderable [w h]
   (component :renderable
@@ -33,7 +39,7 @@
               :ground true}))
 
 (defn solid []
-  (component :solid {:blocked false}))
+  (component :solid {}))
 
 (defn mortal []
   (component :mortal {:dead false}))

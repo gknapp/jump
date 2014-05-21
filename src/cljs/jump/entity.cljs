@@ -1,8 +1,12 @@
 (ns jump.entity)
 
-; entity = {:id :player :traits [... {:type trait, :k v, ...} ...]}
-(defn select-trait
+; could be a macro
+(defn entity
+  [identity & traits]
+  {:id identity
+   :traits (reduce merge {} traits)})
+
+; entity = {:id identity :traits {:trait {:k v}, :trait {:k v}, ...}}
+(defn get-trait
   [trait entity]
-  (let [traits (:traits entity)
-        by-type #(= (:type %) trait)]
-    (first (filter by-type traits))))
+  (get-in entity [:traits trait]))
