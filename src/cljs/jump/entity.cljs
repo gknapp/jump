@@ -10,3 +10,7 @@
 (defn trait
   [trait entity]
   (get-in entity [:traits trait]))
+
+(defn has-trait
+  [t entity]
+  (map? (trait t entity)))
