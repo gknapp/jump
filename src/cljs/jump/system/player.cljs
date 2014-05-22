@@ -1,5 +1,4 @@
-(ns jump.system.player
-  (:require [cljs.core.async :refer [put!]]))
+(ns jump.system.player)
 
 (enable-console-print!)
 
@@ -26,18 +25,23 @@
    :right :right
    :d     :right})
 
+(def input-cmd (atom nil))
+
+(defn clear-cmd []
+  (reset! input-cmd nil))
+
 (defn input->command
   [input]
   (when-let [cmd (-> (.-keyCode input) keyname command)]
     (println "command" cmd)
     cmd))
 
-(defn input>!chan
-  [chan input]
+(defn input->atom
+  [atom input]
   (when-let [cmd (input->command input)]
-    (put! chan cmd)))
+    (reset! atom cmd)))
 
-(defn bind-controls [cmd-chan]
+(defn bind-controls []
   (println "Bound controls")
   (set! (.-onkeydown js/document)
-        #(input>!chan cmd-chan %)))
+        #(input->atom input-cmd %)))
