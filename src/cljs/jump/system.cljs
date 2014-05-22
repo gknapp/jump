@@ -1,10 +1,10 @@
 (ns jump.system
-  (:require [cljs.core.async :refer [sliding-buffer]]
+  (:require [cljs.core.async :refer [chan]]
             [jump.system.player :as player]
             [jump.system.physics :as phys]))
 
 ; input command channel
-(def cmd-chan (sliding-buffer 1))
+(def cmd-chan (chan 1))
 
 (defn start []
   (player/bind-controls cmd-chan))
