@@ -38,8 +38,8 @@
 (defn game-loop []
   (ui/request-frame game-loop)
   (-> game-state
-      system/update!)
-      ui/render)
+      system/update!
+      ui/render))
 
 (defn game-start []
   (println @game-state)

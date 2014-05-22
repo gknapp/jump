@@ -1,16 +1,16 @@
 (ns jump.system
-  (:require [cljs.core.async :refer [chan]]
-            [jump.system.player :as player]
+  (:require [jump.system.player :as player]
             [jump.system.physics :as phys]))
 
-; input command channel
-(def cmd-chan (chan 1))
+(enable-console-print!)
 
 (defn start []
-  (player/bind-controls cmd-chan))
+  (player/bind-controls))
 
 (defn update! [game]
-  (let [updated (->> @game
-                     (phys/move cmd-chan))]
-    (reset! game updated)
+  (let [new-game (->> @game
+                      (phys/move player/input-cmd))]
+    (player/clear-cmd)
+    #_(println "system/update!_updated" updated)
+    #_(reset! game new-game)
     @game))
