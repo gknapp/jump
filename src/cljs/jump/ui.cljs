@@ -23,13 +23,13 @@
 (defn draw
   [entity screen]
   (let [ctx (:context screen)
-        {:keys [x y]} (ent/get-trait :position entity)
-        {:keys [width height]} (ent/get-trait :renderable entity)]
+        {:keys [x y]} (ent/trait :position entity)
+        {:keys [width height]} (ent/trait :renderable entity)]
     (.fillRect ctx x y width height)))
 
 (defn render
   [entities]
-  (let [renderable? #(map? (ent/get-trait :renderable %))
+  (let [renderable? #(map? (ent/trait :renderable %))
         entities (filter renderable? entities)]
     (when entities
       (doseq [entity entities]

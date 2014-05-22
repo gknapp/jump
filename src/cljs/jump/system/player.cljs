@@ -1,4 +1,4 @@
-(ns jump.player
+(ns jump.system.player
   (:require [cljs.core.async :refer [put!]]))
 
 (enable-console-print!)

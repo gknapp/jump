@@ -1,4 +1,4 @@
-(ns jump.physics
+(ns jump.system.physics
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jump.entity :as ent]
             [cljs.core.async :refer [<!]]))
@@ -7,15 +7,15 @@
 
 (defn moveable?
   [entity]
-  (let [has-position (ent/get-trait :position entity)
-        takes-input (ent/get-trait :input entity)
-        can-walk (ent/get-trait :walk entity)]
+  (let [has-position (ent/trait :position entity)
+        takes-input (ent/trait :input entity)
+        can-walk (ent/trait :walk entity)]
     (and has-position takes-input can-walk)))
 
 (defn falls?
   [entity]
-  (let [has-position (ent/get-trait :position entity)
-        has-weight (ent/get-trait :gravity entity)]
+  (let [has-position (ent/trait :position entity)
+        has-weight (ent/trait :gravity entity)]
     ; need an ascending flag for jumping
     (and has-position has-weight)))
 
@@ -23,7 +23,7 @@
 
 (defn walk [entities cmd]
   (doseq [entity entities]
-    (let [{:keys [x step]} (ent/get-trait :position entity)
+    (let [{:keys [x step]} (ent/trait :position entity)
           mov (if (= cmd :left) - +)]
       ; needs to effect game
       (mov x step))))
