@@ -1,23 +1,20 @@
 (ns jump.system.physics
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [jump.entity :as ent]
-            [cljs.core.async :refer [<!]]))
+  (:require [jump.entity :as ent]))
 
 ;; Filters
 
 (defn moveable?
   [entity]
-  (let [has-position (ent/trait :position entity)
-        takes-input (ent/trait :input entity)
-        can-jump (ent/trait :jump entity)
-        can-walk (ent/trait :walk entity)]
-    (and has-position takes-input
-         (or can-jump can-walk))))
+  (let [has-position (ent/has-trait :position entity)
+        takes-input (ent/has-trait :input entity)
+        can-jump (ent/has-trait :jump entity)
+        can-walk (ent/has-trait :walk entity)]
+    (and has-position takes-input (or can-jump can-walk))))
 
 (defn falls?
   [entity]
-  (let [has-position (ent/trait :position entity)
-        has-weight (ent/trait :gravity entity)]
+  (let [has-position (ent/has-trait :position entity)
+        has-weight (ent/has-trait :gravity entity)]
     ; need an ascending flag for jumping
     (and has-position has-weight)))
 
@@ -43,19 +40,25 @@
 
 (defn merge-updates
   [game updates]
-  (let [ids-match? #(= (:id %1) (:id %2))]
-    (vec (for [e game u updates :when (ids-match? e u)]
-           {:id (:id e)
-            :traits (merge (:traits e) (:traits u))}))))
+  (let [ids-match? #(= (:id %1) (:id %2))
+        new-game []
+        new-game (for [e game u updates]
+                   (conj new-game (if (ids-match? e u)
+                                    {:id (:id e)
+                                     :traits (merge (:traits e) (:traits u))}
+                                    e)))]
+    (println "new-game:" new-game)
+    new-game))
 
 (defn move [input game]
-  (when-let [moveables (filter moveable? game)]
-    (go
-      (let [cmd (<! input)
-            updates (cond
-                     (walk? cmd) (map #(walk % cmd) moveables)
-                     (= :jump cmd) moveables)]
-        (merge-updates game updates)))))
+  (when-let [moveables (seq (filter moveable? game))]
+    (let [cmd @input
+          updates (cond
+                   (walk? cmd) (map #(walk % cmd) moveables)
+                   (= :jump cmd) nil)]
+      (if-not (empty? updates)
+        (merge-updates game updates)
+        game))))
 
 (defn gravity [game]
   (let [entities (filter falls? game)]
