@@ -15,22 +15,28 @@
     (set! (.-src img) src)
     img))
 
+; dimensions need to be available in system for camera tracking
 (defonce canvas (.getElementById js/document "screen"))
-(defonce screen {:context (.getContext canvas "2d")
-                 :height (.-height canvas)
-                 :width  (.-width canvas)})
+(defonce screen (.getContext canvas "2d"))
+
+(defn clear-screen!
+  []
+  (.clearRect screen 0 0 (.-width canvas) (.-height canvas)))
+
+(defn renderable?
+  [entity]
+  (ent/has-attr entity :renderable))
 
 (defn draw
-  [entity screen]
-  (let [ctx (:context screen)
-        {:keys [x y]} (ent/trait :position entity)
-        {:keys [width height]} (ent/trait :renderable entity)]
-    (.fillRect ctx x y width height)))
+  [entity]
+  (when (renderable? entity)
+    (let [{:keys [x y]} (ent/attr entity :position)
+          {:keys [width height]} (ent/attr entity :renderable)]
+      (.fillRect screen x y width height))))
 
 (defn render
-  [entities]
-  (let [renderable? #(map? (ent/trait :renderable %))
-        entities (filter renderable? entities)]
-    (when entities
-      (doseq [entity entities]
-        (draw entity screen)))))
+  [world]
+  (when world
+    (clear-screen!)
+    (doseq [entity world]
+      (draw entity))))

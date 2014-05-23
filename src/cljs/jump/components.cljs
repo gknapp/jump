@@ -12,34 +12,38 @@
 (defn input []
   (component :input {}))
 
-(defn player []
-  (component :player {:blocked false}))
-
-(defn ai []
-  (component :ai {}))
-
 (defn renderable [w h]
   (component :renderable
              {:width w
               :height h}))
 
-(defn walk [step facing]
+(defn walk [facing]
+  ":blocked = :left | :right | false"
   (component :walk
-             {:step step
-              :facing facing}))
+             {:facing facing
+              :blocked false}))
 
-(defn gravity [w]
-  (component :gravity
-             {:weight w}))
-
-(defn jump [h]
+(defn jump []
   (component :jump
-             {:height h
-              :falling false
-              :ground true}))
+             {:on-ground true
+              :blocked false}))
 
-(defn solid []
+(defn gravity []
+  (component :gravity {}))
+
+(defn solid
+  []
   (component :solid {}))
+
+(defn ledge
+  []
+  (component :solid {:ledge true}))
 
 (defn mortal []
   (component :mortal {:dead false}))
+
+(defn player []
+  (component :player {}))
+
+(defn ai []
+  (component :ai {}))

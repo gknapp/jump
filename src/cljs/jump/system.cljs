@@ -9,8 +9,7 @@
 
 (defn update! [game]
   (let [new-game (->> @game
-                      (phys/move player/input-cmd))]
+                      (phys/move @player/input-cmd))]
     (player/clear-cmd)
-    #_(println "system/update!_updated" updated)
-    #_(reset! game new-game)
-    @game))
+    (when-not (= @game new-game)
+      (reset! game new-game))))

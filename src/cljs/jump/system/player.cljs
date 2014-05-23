@@ -33,7 +33,6 @@
 (defn input->command
   [input]
   (when-let [cmd (-> (.-keyCode input) keyname command)]
-    (println "command" cmd)
     cmd))
 
 (defn input->atom

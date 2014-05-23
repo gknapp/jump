@@ -6,13 +6,13 @@
 
 (enable-console-print!)
 
-(def game-state
+(def world
   (atom
    [(entity :player
             (component/position 60 565)
-            (component/walk 4 :right)
-            (component/jump 60)
-            (component/gravity 10)
+            (component/walk :right)
+            (component/jump)
+            (component/gravity)
             (component/input)
             (component/player)
             (component/mortal)
@@ -32,18 +32,22 @@
             (component/renderable 600 20))
     (entity (gensym "platform")
             (component/solid)
+            ; ledge must come after solid
+            (component/ledge)
             (component/position 260 260)
             (component/renderable 400 15))]))
 
 (defn game-loop []
   (ui/request-frame game-loop)
-  (-> game-state
+  (-> world
       system/update!
       ui/render))
 
 (defn game-start []
-  (println @game-state)
   (system/start)
+  #_(println "initial world:")
+  #_(println @world)
+  (ui/render @world)
   (game-loop))
 
 (set! (.-onload js/window) game-start)

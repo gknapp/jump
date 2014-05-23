@@ -1,67 +1,75 @@
 (ns jump.system.physics
   (:require [jump.entity :as ent]))
 
+(def step 10)   ; jump / walk amount per frame
+(def height 40) ; jump height
+(def weight 10) ; gravitational pull
+
 ;; Filters
 
-(defn moveable?
+#_(defn falls?
   [entity]
-  (let [has-position (ent/has-trait :position entity)
-        takes-input (ent/has-trait :input entity)
-        can-jump (ent/has-trait :jump entity)
-        can-walk (ent/has-trait :walk entity)]
-    (and has-position takes-input (or can-jump can-walk))))
-
-(defn falls?
-  [entity]
-  (let [has-position (ent/has-trait :position entity)
-        has-weight (ent/has-trait :gravity entity)]
+  (let [has-position (ent/has-attr entity :position)
+        has-weight (ent/has-attr entity :gravity)]
     ; need an ascending flag for jumping
     (and has-position has-weight)))
 
 ;; Actions
 
-(defn walk? [cmd]
+; walking
+
+(defn walk?
+  "is walk command?"
+  [cmd]
   (#{:left :right} cmd))
 
-(defn walk [entity cmd]
-  (let [{:keys [x]} (ent/trait :position entity)
-        {:keys [step facing]} (ent/trait :walk entity)
-        op (if (= cmd :left) - +)
-        update (-> entity
-                    (assoc-in [:traits :position :x] (op x step))
-                    (assoc-in [:traits :walk :facing] cmd))]
-    (merge entity update)))
+(defn can-walk?
+  "entity has a position, can walk and takes input commands"
+  [entity]
+  (and (ent/has-attr entity :position)
+       (ent/has-attr entity :walk)
+       (ent/has-attr entity :input)))
 
-(defn jump [entities]
-  {})
+(defn walk
+  [cmd entity]
+  (if (can-walk? entity)
+    (let [x (ent/attr entity [:position :x])
+          op (if (= cmd :left) - +)
+          update {:position {:x (op x step)}
+                  :walk     {:facing cmd}}]
+      (ent/update entity update))
+    entity))
 
-(defn fall [entities]
-  {})
+; jumping
 
-(defn merge-updates
-  [game updates]
-  (let [ids-match? #(= (:id %1) (:id %2))
-        new-game []
-        new-game (for [e game u updates]
-                   (conj new-game (if (ids-match? e u)
-                                    {:id (:id e)
-                                     :traits (merge (:traits e) (:traits u))}
-                                    e)))]
-    (println "new-game:" new-game)
-    new-game))
+(defn jump?
+  "is jump command?"
+  [cmd]
+  (= cmd :jump))
 
-(defn move [input game]
-  (when-let [moveables (seq (filter moveable? game))]
-    (let [cmd @input
-          updates (cond
-                   (walk? cmd) (map #(walk % cmd) moveables)
-                   (= :jump cmd) nil)]
-      (if-not (empty? updates)
-        (merge-updates game updates)
-        game))))
+(defn can-jump?
+  [entity]
+  (and (ent/has-attr entity :position)
+       (ent/has-attr entity :jump)
+       (ent/has-attr entity :input)
+       (ent/attr entity [:jump :on-ground])))
 
-(defn gravity [game]
-  (let [entities (filter falls? game)]
-    ; apply gravity
-    ; effect game
-    ))
+(defn jump
+  [entity]
+  (if (can-jump? entity)
+    (let [y (ent/attr entity [:position :y])
+          update {:position {:y (- y step)}}]
+      (ent/update entity update))
+    entity))
+
+(defn move
+  [cmd game]
+  (if-not (nil? cmd)
+    (do
+      #_(println "(phys/move)" cmd)
+      (let [update (cond
+                    (walk? cmd) (map #(walk cmd %) game)
+                    (jump? cmd) (map jump game)
+                    :else (println "(phys/move) unrecognised input:" cmd))]
+        update))
+    game))
