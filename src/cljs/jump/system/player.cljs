@@ -31,9 +31,9 @@
   (reset! input-cmd nil))
 
 (defn input->command
-  [input]
+  [[input evt]]
   (when-let [cmd (-> (.-keyCode input) keyname command)]
-    cmd))
+    [cmd evt]))
 
 (defn input->atom
   [atom input]
@@ -43,4 +43,6 @@
 (defn bind-controls []
   (println "Bound controls")
   (set! (.-onkeydown js/document)
-        #(input->atom input-cmd %)))
+        #(input->atom input-cmd [% :start]))
+  (set! (.-onkeyup js/document)
+        #(input->atom input-cmd [% :end])))

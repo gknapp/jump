@@ -7,9 +7,10 @@
 (defn start []
   (player/bind-controls))
 
-(defn update! [game]
-  (let [new-game (->> @game
+(defn update! [world]
+  (let [new-world (->> @world
+                      (phys/gravity)
                       (phys/move @player/input-cmd))]
     (player/clear-cmd)
-    (when-not (= @game new-game)
-      (reset! game new-game))))
+    (when-not (= @world new-world)
+      (reset! world new-world))))

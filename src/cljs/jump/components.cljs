@@ -24,7 +24,7 @@
 
 (defn jump []
   (component :jump
-             {:vel-y 0.0
+             {:velocity 0.0
               :on-ground true}))
 
 (defn gravity []
