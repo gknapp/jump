@@ -10,7 +10,7 @@
               :y y}))
 
 (defn input []
-  (component :input {}))
+  (component :input {:blocked false}))
 
 (defn renderable [w h]
   (component :renderable
@@ -20,13 +20,12 @@
 (defn walk [facing]
   ":blocked = :left | :right | false"
   (component :walk
-             {:facing facing
-              :blocked false}))
+             {:facing facing}))
 
 (defn jump []
   (component :jump
-             {:on-ground true
-              :blocked false}))
+             {:vel-y 0.0
+              :on-ground true}))
 
 (defn gravity []
   (component :gravity {}))
@@ -38,9 +37,6 @@
 (defn ledge
   []
   (component :solid {:ledge true}))
-
-(defn mortal []
-  (component :mortal {:dead false}))
 
 (defn player []
   (component :player {}))

@@ -1,18 +1,10 @@
 (ns jump.system.physics
   (:require [jump.entity :as ent]))
 
-(def step 10)   ; jump / walk amount per frame
-(def height 40) ; jump height
-(def weight 10) ; gravitational pull
-
-;; Filters
-
-#_(defn falls?
-  [entity]
-  (let [has-position (ent/has-attr entity :position)
-        has-weight (ent/has-attr entity :gravity)]
-    ; need an ascending flag for jumping
-    (and has-position has-weight)))
+(def gravity 0.5) ; gravitational pull
+(def step 10)     ; jump / walk amount per frame
+(def height 60)   ; max jump height
+(def weight 10)   ; gravitational pull
 
 ;; Actions
 
@@ -55,21 +47,40 @@
        (ent/attr entity [:jump :on-ground])))
 
 (defn jump
-  [entity]
+  [cmd entity]
   (if (can-jump? entity)
-    (let [y (ent/attr entity [:position :y])
-          update {:position {:y (- y step)}}]
-      (ent/update entity update))
+    (if (= cmd [:jump :start])
+      (let [y (ent/attr entity [:position :y])
+            update {:position {:y (- y step)}}]
+        (ent/update entity update))
+      #_(else))
     entity))
+
+(defn apply-command
+  [cmd game]
+  (cond
+   (walk? cmd) (map #(walk cmd %) game)
+   (jump? cmd) (map #(jump cmd %) game)
+   :else (println "(phys/move) unrecognised input:" cmd)))
 
 (defn move
   [cmd game]
   (if-not (nil? cmd)
-    (do
-      #_(println "(phys/move)" cmd)
-      (let [update (cond
-                    (walk? cmd) (map #(walk cmd %) game)
-                    (jump? cmd) (map jump game)
-                    :else (println "(phys/move) unrecognised input:" cmd))]
-        update))
+    (apply-command cmd game)
     game))
+
+;; Gravity
+
+(defn has-weight?
+  [entity]
+  (and (ent/has-attr entity :position)
+       (ent/has-attr entity :gravity)))
+
+(defn gravity
+  [game]
+  (for [entity game]
+    (if (has-weight? entity)
+      (let [vel (ent/attr entity [:jump :velocity])
+            new-vel (+ vel gravity)]
+        (ent/attr entity [:jump :velocity] new-vel))
+      entity)))

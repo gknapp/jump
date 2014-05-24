@@ -9,14 +9,13 @@
 (def world
   (atom
    [(entity :player
-            (component/position 60 565)
+            (component/gravity)
             (component/walk :right)
             (component/jump)
-            (component/gravity)
             (component/input)
             (component/player)
-            (component/mortal)
             (component/solid)
+            (component/position 60 565)
             (component/renderable 37 35))
     (entity (gensym "wall")
             (component/solid)
@@ -45,8 +44,6 @@
 
 (defn game-start []
   (system/start)
-  #_(println "initial world:")
-  #_(println @world)
   (ui/render @world)
   (game-loop))
 
