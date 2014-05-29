@@ -1,19 +1,21 @@
 (ns jump.system.physics
   (:require [jump.entity :as ent]))
 
-(def gravity 0.5) ; gravitational pull
-(def step 10)     ; jump / walk amount per frame
-(def height 60)   ; max jump height
-(def weight 10)   ; gravitational pull
+(def gforce 0.5) ; gravitational pull
+(def height 10)  ; jump height
+(def step 8)     ; walk speed
 
-;; Actions
+;; Walking ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; walking
+(defn xor
+  [a b]
+  (and (or a b) (not (= a b))))
 
 (defn walk?
-  "is walk command?"
-  [[cmd evt]]
-  (#{:left :right} cmd))
+  "walk left or right in active commands?"
+  [cmd]
+  (xor (contains? cmd :left)
+       (contains? cmd :right)))
 
 (defn can-walk?
   "entity has a position, can walk and takes input commands"
@@ -22,22 +24,28 @@
        (ent/has-attr entity :walk)
        (ent/has-attr entity :input)))
 
-(defn walk
-  [[cmd evt] entity]
+(defn walk-entity
+  [cmd entity]
   (if (can-walk? entity)
-    (let [x (ent/attr entity [:position :x])
-          op (if (= cmd :left) - +)
-          update {:position {:x (op x step)}
-                  :walk     {:facing cmd}}]
-      (ent/update entity update))
+    (let [dir (if (contains? cmd :left) :left :right)
+          op (if (= dir :left) - +)
+          x (ent/attr entity [:position :x])]
+      (ent/update entity {:position {:x (op x step)}
+                          :walk {:facing dir}}))
     entity))
 
-; jumping
+(defn walk
+  [cmd world]
+  (if (walk? cmd)
+    (map #(walk-entity cmd %) world)
+    world))
+
+;; Jumping ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn jump?
-  "is jump command?"
-  [[cmd evt]]
-  (= cmd :jump))
+  "is jump in active commands?"
+  [cmd]
+  (contains? cmd :jump))
 
 (defn can-jump?
   [entity]
@@ -45,56 +53,47 @@
        (ent/has-attr entity :jump)
        (ent/has-attr entity :input)))
 
-; gravity applied in (gravity)
-(defn elevate
+(defn on-ground?
   [entity]
-  (let [y (ent/attr entity [:position :y])
-        v (ent/attr entity [:jump :velocity])
-        update {:position {:y (+ y v)}}]
-    (ent/update entity update)))
+  (ent/attr entity [:jump :on-ground]))
+
+(defn set-jump-velocity
+  [entity]
+  (if (can-jump? entity)
+    (ent/attr entity [:jump :velocity] height)
+    entity))
+
+; gravity applied to velocity in (gravity)
+(defn elevate
+  [entity vel]
+  (let [y (ent/attr entity [:position :y])]
+    (ent/attr entity [:position :y] (- y vel))))
 
 (defn start-jump
   [entity]
-  (let [y (ent/attr entity [:position :y])
-        update {:jump {:velocity (* step -1)
-                       :on-ground false
-                       :start-y y}}
-        new-ent (ent/update entity update)]
-    (elevate new-ent)))
+  (if (can-jump? entity)
+    (if (on-ground? entity)
+      (let [jumping (set-jump-velocity entity)]
+        (ent/attr jumping [:jump :on-ground] false))
+      (elevate entity (ent/attr entity [:jump :velocity])))
+    entity))
 
 (defn end-jump
   [entity]
-  (let [limit (* (/ step 2) -1)
-        velocity (ent/attr entity [:jump :velocity])]
-    (if (< velocity limit)
-      (ent/attr entity [:jump :velocity] limit)
-      entity)))
-
-(defn jump
-  [cmd entity]
   (if (can-jump? entity)
-    (condp = cmd
-      [:jump :start] (if (ent/attr entity [:jump :on-ground])
-                       (start-jump entity)
-                       (elevate entity))
-      [:jump :end] (end-jump entity)
-      :else (elevate entity))
+    (let [v (ent/attr entity [:jump :velocity])
+          limit (/ height 2)
+          new-v (if (> v limit) limit v)]
+      (elevate entity new-v))
     entity))
 
-(defn apply-command
-  [cmd world]
-  (cond
-   (walk? cmd) (map #(walk cmd %) world)
-   (jump? cmd) (map #(jump cmd %) world)
-   :else (println "(phys/move) unrecognised input:" cmd)))
+(defn jump
+  [cmd entities]
+  (if (jump? cmd)
+    (map start-jump entities)
+    (map end-jump entities)))
 
-(defn move
-  [cmd world]
-  (if-not (nil? cmd)
-    (apply-command cmd world)
-    world))
-
-;; Gravity
+;; Gravity ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn has-weight?
   [entity]
@@ -103,10 +102,10 @@
        (false? (ent/attr entity [:jump :on-ground]))))
 
 (defn gravity
+  "apply gravity to jump velocity"
   [world]
   (for [entity world]
     (if (has-weight? entity)
-      (let [vel (ent/attr entity [:jump :velocity])
-            new-vel (+ vel gravity)]
-        (ent/attr entity [:jump :velocity] new-vel))
+      (let [vel (ent/attr entity [:jump :velocity])]
+        (ent/attr entity [:jump :velocity] (- vel gforce)))
       entity)))
