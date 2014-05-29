@@ -25,24 +25,26 @@
    :right :right
    :d     :right})
 
-(def input-cmd (atom nil))
-
-(defn clear-cmd []
-  (reset! input-cmd nil))
+(def commands (atom #{}))
 
 (defn input->command
-  [[input evt]]
-  (when-let [cmd (-> (.-keyCode input) keyname command)]
-    [cmd evt]))
+  [input]
+  (-> (.-keyCode input) keyname command))
 
-(defn input->atom
+(defn add-cmd
   [atom input]
   (when-let [cmd (input->command input)]
-    (reset! atom cmd)))
+    (swap! atom conj cmd)))
 
-(defn bind-controls []
-  (println "Bound controls")
+(defn clr-cmd
+  [atom input]
+  (when-let [cmd (input->command input)]
+    (swap! atom disj cmd)))
+
+(defn bind-controls
+  "maintain set of active input commands"
+  []
   (set! (.-onkeydown js/document)
-        #(input->atom input-cmd [% :start]))
+        #(add-cmd commands %))
   (set! (.-onkeyup js/document)
-        #(input->atom input-cmd [% :end])))
+        #(clr-cmd commands %)))
