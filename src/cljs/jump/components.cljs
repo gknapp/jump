@@ -18,9 +18,9 @@
               :height h}))
 
 (defn walk [facing]
-  ":blocked = :left | :right | false"
   (component :walk
-             {:facing facing}))
+             {:velocity 0.0
+              :facing facing}))
 
 (defn jump []
   (component :jump
