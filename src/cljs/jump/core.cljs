@@ -8,7 +8,7 @@
 
 (def world
   (atom
-   [(entity :player
+   [(entity "player"
             (component/gravity)
             (component/walk :right)
             (component/jump)

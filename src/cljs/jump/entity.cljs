@@ -4,7 +4,7 @@
 (defn entity
   "create entity, merging all attribute maps"
   [identity & attrs]
-  {:id identity
+  {:id (keyword identity)
    :attrs (reduce merge {} attrs)})
 
 (defn deep-merge
